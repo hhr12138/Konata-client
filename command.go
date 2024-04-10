@@ -1,4 +1,4 @@
-package cmd
+package Konata_client
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ type Cmder interface {
 	arg(int) string
 	Name() string
 
-	readReply() error
+	//readReply() error
 	SetErr(error)
 
 	readTimeout() *time.Duration
