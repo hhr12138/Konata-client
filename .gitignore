@@ -1,0 +1,8 @@
+output
+*.swp
+/.idea
+/.cds
+/.vscodegi
+profile.out
+build
+/kitex_gen
