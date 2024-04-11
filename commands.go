@@ -9,58 +9,14 @@ import (
 	"time"
 )
 
-type Client interface {
-	// string
-	Append(key, value string) *IntCmd
-	Decr(key string) *IntCmd
-	DecrBy(key string, decrement int64) *IntCmd
-	DecrByFloat(key string, decrement float64)
-	Get(key string) *StringCmd
-	GetDel(keys ...string) *StringCmd
-	GetRange(key string, start, end int64) *StringCmd
-	GetSet(key string, value interface{}) *StringCmd
-	Incr(key string) *IntCmd
-	IncrBy(key string, value int64) *IntCmd
-	IncrByFloat(key, incr float64) *FloatCmd
-	MGet(keys ...string) *SliceCmd
-	MSet(pairs ...interface{}) *StatusCmd
-	MSetNX(pairs ...interface{}) *BoolCmd
-	Set(key string, value interface{}) *StatusCmd
-	SetNX(key string, value interface{}) *BoolCmd
-	StrLen(key string) *IntCmd
-	// list,虽然命令对齐redis，但这里的list实质上是数组
-	LIndex(key string, index int64) *StringCmd
-	LPush(key string, values ...interface{}) *IntCmd
-	LPushX(key string, value interface{}) *IntCmd
-	RPush(key string, values ...interface{}) *IntCmd
-	RPushX(key string, value interface{}) *IntCmd
-	LPop(key string) *StringCmd
-	RPop(key string) *StringCmd
-	LRange(key string, start, stop int64) *StringSliceCmd
-	LRem(key string, count int64, value interface{}) *IntCmd
-	LSet(key string, index int64, value interface{}) *StatusCmd
-	LInsert(key, op string, pivot, value interface{}) *IntCmd
-	// hash
-	HSet(key, field string, value interface{}) *BoolCmd
-	HGet(key, field string) *StringCmd
-	HDel(key string, fields ...string) *IntCmd
-	HExists(key, field string) *BoolCmd
-	HGetAll(key string) *StringStringMapCmd
-	HLen(key string) *IntCmd
-	HSetNX(key, field string, value interface{}) *BoolCmd
-	HIncrBy(key, field string, incr int64) *IntCmd
-	HIncrByFloat(key, field string, incr float64) *FloatCmd
-	HDecrBy(key, field string, incr int64) *IntCmd
-	HDecrByFloat(key, field string, incr float64) *FloatCmd
-	HVals(key string) *StringSliceCmd
-	// set
-	SAdd(key string, members ...interface{}) *IntCmd
-	SCard(key string) *IntCmd
-	SDiff(keys ...string) *StringSliceCmd
-	SInter(keys ...string) *StringSliceCmd
-	SRem(key string, members ...interface{}) *IntCmd
-	SUnion(keys ...string) *StringSliceCmd
+type Cmdable interface {
+	StringCmdable
+	ListCmdable
+	HashCmdable
+	SetCmdable
 }
+
+type process func(cmd Cmder) error
 
 type baseCmd struct {
 	_args []interface{}
