@@ -1,5 +1,7 @@
 package Konata_client
 
+import "github.com/hhr12138/Konata-client/kitex_gen/db/raft/konata_client"
+
 type StringCmdable interface {
 	// string
 	Append(key, value string) *IntCmd
@@ -21,29 +23,34 @@ type StringCmdable interface {
 
 func (p process) Append(key, value string) *IntCmd {
 	cmd := NewIntCmd("append", key, value)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) Decr(key string) *IntCmd {
 	cmd := NewIntCmd("decr", key)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) DecrBy(key string, decrement int64) *IntCmd {
 	cmd := NewIntCmd("decrby", key, decrement)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 func (p process) DecrByFloat(key string, value float64) *FloatCmd {
 	cmd := NewFloatCmd("decrbyfloat", key, value)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) GetRange(key string, start, end int64) *StringCmd {
 	cmd := NewStringCmd("getrange", key, start, end)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -51,6 +58,7 @@ func (p process) GetRange(key string, start, end int64) *StringCmd {
 // GetDel redis-server version >= 6.2.0.
 func (p process) GetDel(key string) *StringCmd {
 	cmd := NewStringCmd("getdel", key)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -58,30 +66,35 @@ func (p process) GetDel(key string) *StringCmd {
 // Get Redis `GET key` command. It returns redis.Nil error when key does not exist.
 func (p process) Get(key string) *StringCmd {
 	cmd := NewStringCmd("get", key)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) GetSet(key string, value interface{}) *StringCmd {
 	cmd := NewStringCmd("getset", key, value)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) Incr(key string) *IntCmd {
 	cmd := NewIntCmd("incr", key)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) IncrBy(key string, value int64) *IntCmd {
 	cmd := NewIntCmd("incrby", key, value)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) IncrByFloat(key string, value float64) *FloatCmd {
 	cmd := NewFloatCmd("incrbyfloat", key, value)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -93,6 +106,7 @@ func (p process) MGet(keys ...string) *SliceCmd {
 		args[1+i] = key
 	}
 	cmd := NewSliceCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -107,6 +121,7 @@ func (p process) MSet(values ...interface{}) *StatusCmd {
 	args[0] = "mset"
 	args = appendArgs(args, values)
 	cmd := NewStatusCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -124,12 +139,14 @@ func (p process) Set(key string, value interface{}) *StatusCmd {
 	args[2] = value
 
 	cmd := NewStatusCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) StrLen(key string) *IntCmd {
 	cmd := NewIntCmd("strlen", key)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }

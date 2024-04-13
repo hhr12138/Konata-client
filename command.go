@@ -2,6 +2,7 @@ package Konata_client
 
 import (
 	"fmt"
+	"github.com/hhr12138/Konata-client/kitex_gen/db/raft/konata_client"
 	"time"
 )
 
@@ -12,6 +13,11 @@ type Cmder interface {
 
 	//readReply() error
 	SetErr(error)
+
+	SetOp(op konata_client.OpType)
+	GetOp() konata_client.OpType
+
+	ReadReply(command string) error
 
 	readTimeout() *time.Duration
 
