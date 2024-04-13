@@ -4,6 +4,7 @@ import (
 	"github.com/hhr12138/Konata-client/internal"
 	"github.com/hhr12138/Konata-client/internal/proto"
 	"github.com/hhr12138/Konata-client/internal/util"
+	"github.com/hhr12138/Konata-client/kitex_gen/db/raft/konata_client"
 	"strconv"
 	"strings"
 	"time"
@@ -20,9 +21,14 @@ type process func(cmd Cmder) error
 
 type baseCmd struct {
 	_args []interface{}
+	Op    konata_client.OpType
 	err   error
 
 	_readTimeout *time.Duration
+}
+
+func (cmd *baseCmd) ReadReply(command string) error {
+	return nil
 }
 
 func (cmd *baseCmd) Err() error {
@@ -39,6 +45,14 @@ func (cmd *baseCmd) arg(pos int) string {
 	}
 	s, _ := cmd._args[pos].(string)
 	return s
+}
+
+func (cmd *baseCmd) SetOp(op konata_client.OpType) {
+	cmd.Op = op
+}
+
+func (cmd *baseCmd) GetOp() konata_client.OpType {
+	return cmd.Op
 }
 
 func (cmd *baseCmd) Name() string {

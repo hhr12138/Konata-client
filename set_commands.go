@@ -1,5 +1,7 @@
 package Konata_client
 
+import "github.com/hhr12138/Konata-client/kitex_gen/db/raft/konata_client"
+
 type SetCmdable interface {
 	// set
 	SAdd(key string, members ...interface{}) *IntCmd
@@ -16,12 +18,14 @@ func (p process) SAdd(key string, members ...interface{}) *IntCmd {
 	args[1] = key
 	args = appendArgs(args, members)
 	cmd := NewIntCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) SCard(key string) *IntCmd {
 	cmd := NewIntCmd("scard", key)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -33,6 +37,7 @@ func (p process) SDiff(keys ...string) *StringSliceCmd {
 		args[1+i] = key
 	}
 	cmd := NewStringSliceCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -43,6 +48,7 @@ func (p process) SRem(key string, members ...interface{}) *IntCmd {
 	args[1] = key
 	args = appendArgs(args, members)
 	cmd := NewIntCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -54,6 +60,7 @@ func (p process) SInter(keys ...string) *StringSliceCmd {
 		args[1+i] = key
 	}
 	cmd := NewStringSliceCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -65,6 +72,7 @@ func (p process) SUnion(keys ...string) *StringSliceCmd {
 		args[1+i] = key
 	}
 	cmd := NewStringSliceCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }

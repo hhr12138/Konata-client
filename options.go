@@ -4,58 +4,49 @@ import (
 	"time"
 )
 
+// 为了确保日后rpc框架切换对用户无感知，必须包一层自己对options
 type Options struct {
 	// host:port address.
-	Addr string
+	// Konata在客户端视角为单机服务，想用户屏蔽具体addr
+	//Addr string
 
 	// ClientName will execute the `CLIENT SETNAME ClientName` command for each conn.
 	ClientName string
-	// Maximum number of retries before giving up.
-	// Default is 3 retries; -1 (not 0) disables retries.
-	MaxRetries int
 
-	// Dial timeout for establishing new connections.
-	// Default is 5 seconds.
+	//无限期重试，直到成功
+	//MaxRetries int
+	MaxRetryBackoff time.Duration
+	MinRetryBackoff time.Duration
+
 	DialTimeout time.Duration
-	// Timeout for socket reads. If reached, commands will fail
-	// with a timeout instead of blocking. Supported values:
-	//   - `0` - default timeout (3 seconds).
-	//   - `-1` - no timeout (block indefinitely).
-	//   - `-2` - disables SetReadDeadline calls completely.
-	ReadTimeout time.Duration
-	// Timeout for socket writes. If reached, commands will fail
-	// with a timeout instead of blocking.  Supported values:
-	//   - `0` - default timeout (3 seconds).
-	//   - `-1` - no timeout (block indefinitely).
-	//   - `-2` - disables SetWriteDeadline calls completely.
-	WriteTimeout time.Duration
-	// Enables read only queries on slave/follower nodes.
+	RPCTimeout  time.Duration
+
 	readOnly bool
 }
 
 func (opt *Options) init() {
-	if opt.Addr == "" {
-		opt.Addr = "localhost:59864"
-	}
+	//if opt.Addr == "" {
+	//	opt.Addr = config.DefaultAddr
+	//}
 	if opt.DialTimeout == 0 {
 		opt.DialTimeout = 5 * time.Second
 	}
-	switch opt.ReadTimeout {
+	switch opt.RPCTimeout {
 	case -1:
-		opt.ReadTimeout = 0
+		opt.RPCTimeout = 0
 	case 0:
-		opt.ReadTimeout = 3 * time.Second
+		opt.RPCTimeout = 3 * time.Second
 	}
-	switch opt.WriteTimeout {
+	switch opt.MinRetryBackoff {
 	case -1:
-		opt.WriteTimeout = 0
+		opt.MinRetryBackoff = 0
 	case 0:
-		opt.WriteTimeout = opt.ReadTimeout
+		opt.MinRetryBackoff = 8 * time.Millisecond
 	}
-
-	if opt.MaxRetries == -1 {
-		opt.MaxRetries = 0
-	} else if opt.MaxRetries == 0 {
-		opt.MaxRetries = 3
+	switch opt.MaxRetryBackoff {
+	case -1:
+		opt.MaxRetryBackoff = 0
+	case 0:
+		opt.MaxRetryBackoff = 512 * time.Millisecond
 	}
 }
