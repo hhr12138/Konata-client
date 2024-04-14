@@ -65,12 +65,19 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 		ctx = context.Background()
 		// 生成唯一id
 		reqId = utils.GetReqId()
-		resp  *konata_client.Reply
-		opts  []callopt.Option
+		// 必须为指针，从而让defer函数能感知到变化
+		targetAddr *string
+		resp       *konata_client.Reply
+		opts       []callopt.Option
 	)
 	ctx = context.WithValue(ctx, "req_id", reqId)
+	defer c.RemoveReqId(ctx, reqId, targetAddr)
 	for attempt := 0; ; attempt++ {
-		opts = c.buildOpt()
+		val := c.Addr.Load()
+		// 不判ok，这里绝对不能错。
+		addr := val.(string)
+		targetAddr = &addr
+		opts = c.buildOpt(addr)
 		if attempt > 0 {
 			// 睡眠一段时间，等待网络恢复
 			time.Sleep(c.retryBackoff(attempt))
@@ -113,6 +120,25 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 	}
 }
 
+// 执行结束后异步删除req_id防止oom，服务端后等待一个MSL后删除
+func (c *DefaultClient) RemoveReqId(ctx context.Context, reqId string, targetAddr *string) {
+	// 理论上不会为空，防御性编程
+	if targetAddr == nil {
+		return
+	}
+	// 一直重试直到成功，防止oom
+	go func() {
+		opts := c.buildOpt(*targetAddr)
+		for {
+			rsp, err := c.kitexClient.RemoveReqId(context.Background(), &konata_client.GetArgs_{ReqId: reqId}, opts...)
+			if err != nil || (rsp.Error != nil && rsp.Error.Repeat) {
+				continue
+			}
+			break
+		}
+	}()
+}
+
 func (c *DefaultClient) retryBackoff(retry int) time.Duration {
 	if retry < 0 {
 		retry = 0
@@ -131,11 +157,8 @@ func (c *DefaultClient) retryBackoff(retry int) time.Duration {
 	return time.Duration(rand.Int63n(int64(backoff)))
 }
 
-func (c *DefaultClient) buildOpt() []callopt.Option {
+func (c *DefaultClient) buildOpt(addr string) []callopt.Option {
 	opts := make([]callopt.Option, 0)
-	val := c.Addr.Load()
-	// 不判ok，这里绝对不能错。
-	addr := val.(string)
 	opts = append(opts, callopt.WithHTTPHost(addr))
 	return opts
 }

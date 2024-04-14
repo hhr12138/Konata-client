@@ -42,5 +42,6 @@ struct PutAppendArgs {
 service KonataService {
     Reply Get(1: GetArgs args),
     Reply PutAppend(1: PutAppendArgs args),
+    Reply RemoveReqId(1: GetArgs args),
 }
 

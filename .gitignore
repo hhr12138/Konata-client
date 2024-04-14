@@ -5,4 +5,4 @@ output
 /.vscodegi
 profile.out
 build
-/kitex_gen
+#/kitex_gen
