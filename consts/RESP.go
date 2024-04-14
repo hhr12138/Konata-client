@@ -1,9 +1,9 @@
 package consts
 
 const (
-	RESPString     = "+"
-	RESPError      = "-"
-	RESPInteger    = ":"
-	RESPBulkString = "$"
-	RESPArrays     = "*"
+	RESPString     = '+'
+	RESPError      = '-'
+	RESPInteger    = ':'
+	RESPBulkString = '$'
+	RESPArrays     = '*'
 )

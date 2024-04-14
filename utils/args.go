@@ -14,7 +14,7 @@ func GetReqId() string {
 
 func BuildCommand(args ...interface{}) (string, error) {
 	var b strings.Builder
-	b.WriteString(consts.RESPArrays)
+	b.WriteRune(consts.RESPArrays)
 	b.WriteString(strconv.FormatInt(int64(len(args)), 10))
 	b.WriteRune('\r')
 	b.WriteRune('\n')
@@ -81,7 +81,7 @@ func append(b *strings.Builder, val interface{}) error {
 }
 
 func appendString(b *strings.Builder, s string) {
-	b.WriteString(consts.RESPString)
+	b.WriteRune(consts.RESPString)
 	b.WriteString(strconv.FormatInt(int64(len(s)), 10))
 	b.WriteRune('\r')
 	b.WriteRune('\n')
@@ -91,7 +91,7 @@ func appendString(b *strings.Builder, s string) {
 }
 
 func appendBytes(b *strings.Builder, p []byte) {
-	b.WriteString(consts.RESPString)
+	b.WriteRune(consts.RESPString)
 	b.WriteString(strconv.FormatInt(int64(len(p)), 10))
 	b.WriteRune('\r')
 	b.WriteRune('\n')

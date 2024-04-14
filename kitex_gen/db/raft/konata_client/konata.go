@@ -16,6 +16,8 @@ const (
 
 	RemoveId OpType = "remove_id"
 
+	ErrCodeRspParseFail ErrCode = 40034
+
 	ErrCodeMasterReplace ErrCode = 50012
 )
 

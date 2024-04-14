@@ -17,7 +17,7 @@ type Cmder interface {
 	SetOp(op konata_client.OpType)
 	GetOp() konata_client.OpType
 
-	ReadReply(command string) error
+	readReply(command string) error
 
 	readTimeout() *time.Duration
 

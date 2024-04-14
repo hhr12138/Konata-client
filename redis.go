@@ -9,6 +9,7 @@ import (
 	"github.com/hhr12138/Konata-client/kitex_gen/db/raft/konata_client"
 	"github.com/hhr12138/Konata-client/kitex_gen/db/raft/konata_client/konataservice"
 	"github.com/hhr12138/Konata-client/utils"
+	"github.com/pkg/errors"
 	"math/rand"
 	"sync/atomic"
 	"time"
@@ -117,6 +118,12 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 			cmd.SetErr(err)
 			return err
 		}
+		err = cmd.readReply(resp.Value)
+		if err != nil {
+			cmd.SetErr(errors.Wrapf(err, "err_code=%v,返回值解析失败", konata_client.ErrCodeRspParseFail))
+			return err
+		}
+		return nil
 	}
 }
 
