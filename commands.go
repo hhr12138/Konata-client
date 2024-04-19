@@ -1,9 +1,13 @@
 package Konata_client
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/hhr12138/Konata-client/internal"
 	"github.com/hhr12138/Konata-client/internal/proto"
 	"github.com/hhr12138/Konata-client/internal/util"
+	"github.com/hhr12138/Konata-client/kitex_gen/db/raft/konata_client"
+	"github.com/hhr12138/Konata-client/utils"
 	"strconv"
 	"strings"
 	"time"
@@ -20,6 +24,7 @@ type process func(cmd Cmder) error
 
 type baseCmd struct {
 	_args []interface{}
+	Op    konata_client.OpType
 	err   error
 
 	_readTimeout *time.Duration
@@ -43,7 +48,6 @@ func (cmd *baseCmd) arg(pos int) string {
 
 func (cmd *baseCmd) Name() string {
 	if len(cmd._args) > 0 {
-		// Cmd name must be lower cased.
 		s := strings.ToLower(cmd.arg(0))
 		cmd._args[0] = s
 		return s
@@ -69,6 +73,14 @@ func (cmd *baseCmd) SetReadTimeout(d time.Duration) {
 
 func (cmd *baseCmd) SetErr(e error) {
 	cmd.err = e
+}
+
+func (cmd *baseCmd) SetOp(op string) {
+	cmd.Op = op
+}
+
+func (cmd *baseCmd) GetOp() string {
+	return cmd.Op
 }
 
 //------------------------------------------------------------------------------
@@ -99,6 +111,11 @@ func (cmd *IntCmd) Result() (int64, error) {
 
 func (cmd *IntCmd) String() string {
 	return cmdString(cmd, cmd.val)
+}
+
+func (cmd *IntCmd) readReply(rsp string) error {
+	cmd.val, cmd.err = utils.ReadIntReply(rsp)
+	return cmd.err
 }
 
 //------------------------------------------------------------------------------
@@ -163,6 +180,11 @@ func (cmd *StringCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
 
+func (cmd *StringCmd) readReply(rsp string) error {
+	cmd.val, cmd.err = utils.ReadBytesReply(rsp)
+	return cmd.err
+}
+
 func cmdString(cmd Cmder, val interface{}) string {
 	b := make([]byte, 0, 64)
 
@@ -210,6 +232,11 @@ func (cmd *FloatCmd) Result() (float64, error) {
 	return cmd.Val(), cmd.Err()
 }
 
+func (cmd *FloatCmd) readReply(rsp string) error {
+	cmd.val, cmd.err = utils.ReadFloatReply(rsp)
+	return cmd.err
+}
+
 func (cmd *FloatCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
@@ -238,6 +265,13 @@ func (cmd *SliceCmd) SetVal(val []interface{}) {
 
 func (cmd *SliceCmd) Result() ([]interface{}, error) {
 	return cmd.val, cmd.err
+}
+
+func (cmd *SliceCmd) readReply(rsp string) error {
+	var v interface{}
+	v, cmd.err = utils.ReadArrayReply(sliceParser)
+	cmd.val = v.([]interface{})
+	return nil
 }
 
 func (cmd *SliceCmd) String() string {
@@ -270,6 +304,11 @@ func (cmd *StatusCmd) Result() (string, error) {
 	return cmd.val, cmd.err
 }
 
+func (cmd *StatusCmd) readReply(rsp string) error {
+	cmd.val, cmd.err = utils.ReadStringReply(rsp)
+	return cmd.err
+}
+
 func (cmd *StatusCmd) String() string {
 	return cmdString(cmd, cmd.val)
 }
@@ -298,6 +337,23 @@ func (cmd *BoolCmd) SetVal(val bool) {
 
 func (cmd *BoolCmd) Result() (bool, error) {
 	return cmd.val, cmd.err
+}
+
+func (cmd *BoolCmd) readReply(rsp string) error {
+	var v interface{}
+	v, cmd.err = utils.ReadBoolReply(rsp)
+
+	switch v := v.(type) {
+	case int64:
+		cmd.val = v == 1
+		return nil
+	case []byte:
+		cmd.val = bytes.Equal(v, ok)
+		return nil
+	default:
+		cmd.err = fmt.Errorf("got %T, wanted int64 or string", v)
+		return cmd.err
+	}
 }
 
 func (cmd *BoolCmd) String() string {

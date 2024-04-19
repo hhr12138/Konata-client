@@ -1,5 +1,7 @@
 package Konata_client
 
+import "github.com/hhr12138/Konata-client/kitex_gen/db/raft/konata_client"
+
 type HashCmdable interface {
 	// hash
 	HSet(key, field string, value interface{}) *BoolCmd
@@ -23,18 +25,21 @@ func (p process) HDel(key string, fields ...string) *IntCmd {
 		args[2+i] = field
 	}
 	cmd := NewIntCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) HExists(key, field string) *BoolCmd {
 	cmd := NewBoolCmd("hexists", key, field)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) HGet(key, field string) *StringCmd {
 	cmd := NewStringCmd("hget", key, field)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -45,48 +50,56 @@ func (p process) HSet(key string, values ...interface{}) *IntCmd {
 	args[1] = key
 	args = appendArgs(args, values)
 	cmd := NewIntCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) HGetAll(key string) *StringStringMapCmd {
 	cmd := NewStringStringMapCmd("hgetall", key)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) HLen(key string) *IntCmd {
 	cmd := NewIntCmd("hlen", key)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) HIncrBy(key, field string, incr int64) *IntCmd {
 	cmd := NewIntCmd("hincrby", key, field, incr)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) HIncrByFloat(key, field string, incr float64) *FloatCmd {
 	cmd := NewFloatCmd("hincrbyfloat", key, field, incr)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) HDecrBy(key, field string, incr int64) *IntCmd {
 	cmd := NewIntCmd("hdecrby", key, field, incr)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) HDecrByFloat(key, field string, incr float64) *FloatCmd {
 	cmd := NewFloatCmd("hdecrbyfloat", key, field, incr)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) HVals(key string) *StringSliceCmd {
 	cmd := NewStringSliceCmd("hvals", key)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }

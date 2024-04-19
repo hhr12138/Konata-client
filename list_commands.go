@@ -1,5 +1,7 @@
 package Konata_client
 
+import "github.com/hhr12138/Konata-client/kitex_gen/db/raft/konata_client"
+
 type ListCmdable interface {
 	// list,虽然命令对齐redis，但这里的list实质上是数组
 	LIndex(key string, index int64) *StringCmd
@@ -19,6 +21,7 @@ type ListCmdable interface {
 
 func (p process) LIndex(key string, index int64) *StringCmd {
 	cmd := NewStringCmd("lindex", key, index)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -29,6 +32,7 @@ func (p process) LPush(key string, values ...interface{}) *IntCmd {
 	args[1] = key
 	args = appendArgs(args, values)
 	cmd := NewIntCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -39,6 +43,7 @@ func (p process) LPushX(key string, values ...interface{}) *IntCmd {
 	args[1] = key
 	args = appendArgs(args, values)
 	cmd := NewIntCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -49,6 +54,7 @@ func (p process) RPush(key string, values ...interface{}) *IntCmd {
 	args[1] = key
 	args = appendArgs(args, values)
 	cmd := NewIntCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -59,24 +65,28 @@ func (p process) RPushX(key string, values ...interface{}) *IntCmd {
 	args[1] = key
 	args = appendArgs(args, values)
 	cmd := NewIntCmd(args...)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) LPop(key string) *StringCmd {
 	cmd := NewStringCmd("lpop", key)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) RPopCount(key string, count int) *StringSliceCmd {
 	cmd := NewStringSliceCmd("rpop", key, count)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) RPop(key string) *StringCmd {
 	cmd := NewStringCmd("rpop", key)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
@@ -88,24 +98,28 @@ func (p process) LRange(key string, start, stop int64) *StringSliceCmd {
 		start,
 		stop,
 	)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) LRem(key string, count int64, value interface{}) *IntCmd {
 	cmd := NewIntCmd("lrem", key, count, value)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) LSet(key string, index int64, value interface{}) *StatusCmd {
 	cmd := NewStatusCmd("lset", key, index, value)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
 
 func (p process) LInsert(key, op string, pivot, value interface{}) *IntCmd {
 	cmd := NewIntCmd("linsert", key, op, pivot, value)
+	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd
 }
