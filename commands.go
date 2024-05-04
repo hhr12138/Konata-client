@@ -269,7 +269,7 @@ func (cmd *SliceCmd) Result() ([]interface{}, error) {
 
 func (cmd *SliceCmd) readReply(rsp string) error {
 	var v interface{}
-	v, cmd.err = utils.ReadArrayReply(sliceParser)
+	v, cmd.err = utils.ReadArrayReply(rsp, utils.ReadArrayParse)
 	cmd.val = v.([]interface{})
 	return nil
 }
@@ -396,6 +396,16 @@ func (cmd *StringSliceCmd) ScanSlice(container interface{}) error {
 	return proto.ScanSlice(cmd.Val(), container)
 }
 
+func (cmd *StringSliceCmd) readReply(rsp string) error {
+	val, err := utils.ReadArrayReply(rsp, utils.ReadArrayParse)
+	if err != nil {
+		cmd.err = err
+		return err
+	}
+	cmd.val = val.([]string)
+	return nil
+}
+
 //------------------------------------------------------------------------------
 
 type StringStringMapCmd struct {
@@ -424,4 +434,14 @@ func (cmd *StringStringMapCmd) Result() (map[string]string, error) {
 
 func (cmd *StringStringMapCmd) String() string {
 	return cmdString(cmd, cmd.val)
+}
+
+func (cmd *StringStringMapCmd) readReply(rsp string) error {
+	val, err := utils.ReadArrayReply(rsp, utils.ReadMapParse)
+	if err != nil {
+		cmd.err = err
+		return err
+	}
+	cmd.val = val.(map[string]string)
+	return nil
 }
