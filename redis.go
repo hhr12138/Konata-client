@@ -23,7 +23,7 @@ type DefaultClient struct {
 	// 只读
 	kitexClient konataservice.Client
 	// 注意并发
-	Addr atomic.Value
+	Addrs []atomic.Value
 }
 
 // NewClient returns a client to the Redis Server specified by Options.
@@ -47,7 +47,10 @@ func (c *DefaultClient) init() error {
 	}
 	c.kitexClient = kitexClient
 	c.process = c.defaultProcess
-	c.Addr.Store(config.DefaultAddrs[0])
+	c.Addrs = make([]atomic.Value, len(config.DefaultAddrs))
+	for i, addr := range config.DefaultAddrs {
+		c.Addrs[i].Store(addr)
+	}
 	return nil
 }
 
@@ -70,11 +73,14 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 		targetAddr *string
 		resp       *konata_client.Reply
 		opts       []callopt.Option
+		key        = cmd.Args()[1].(string)
+		// 根据keyhash 得到处理他的节点
+		addrIdx = utils.GetAddrIdx(key)
 	)
 	ctx = context.WithValue(ctx, "req_id", reqId)
 	defer c.RemoveReqId(ctx, reqId, targetAddr)
 	for attempt := 0; ; attempt++ {
-		val := c.Addr.Load()
+		val := c.Addrs[addrIdx].Load()
 		// 不判ok，这里绝对不能错。
 		addr := val.(string)
 		targetAddr = &addr
@@ -108,7 +114,7 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 		if err != nil || (resp.Error != nil && resp.Error.Repeat) {
 			// 当前服务不是master，更换master.
 			if resp.Error.Code == konata_client.ErrCodeMasterReplace {
-				c.Addr.Store(resp.Base.Addr)
+				c.Addrs[addrIdx].Store(resp.Base.Addr)
 			}
 			continue
 		}

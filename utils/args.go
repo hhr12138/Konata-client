@@ -4,12 +4,19 @@ import (
 	"encoding"
 	"fmt"
 	"github.com/hhr12138/Konata-client/consts"
+	"hash/fnv"
 	"strconv"
 	"strings"
 )
 
 func GetReqId() string {
 	return ""
+}
+
+func GetAddrIdx(key string) int {
+	hash := fnv.New32a()
+	hash.Write([]byte(key))
+	return int(hash.Sum32())
 }
 
 func BuildCommand(args ...interface{}) (string, error) {
