@@ -239,6 +239,7 @@ func (r *Reader) readVerb(line []byte) (string, error) {
 }
 
 func (r *Reader) readSlice(line []byte) ([]interface{}, error) {
+
 	n, err := replyLen(line)
 	if err != nil {
 		return nil, err

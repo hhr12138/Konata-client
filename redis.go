@@ -2,6 +2,7 @@ package Konata_client
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/cloudwego/kitex/client"
 	"github.com/cloudwego/kitex/client/callopt"
@@ -90,25 +91,27 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 			time.Sleep(c.retryBackoff(attempt))
 		}
 
-		command, err := utils.BuildCommand(cmd.Args())
+		msg, err := utils.BuildMsg(cmd.Args())
 		if err != nil {
 			cmd.SetErr(err)
 			return err
 		}
+		command := c.buildCommand(reqId, msg)
+		commandBs, _ := json.Marshal(command)
 		if cmd.GetOp() == konata_client.Write {
 			putAppendArgs := &konata_client.PutAppendArgs_{
 				ReqId:   reqId,
-				Command: command,
+				Command: string(commandBs),
 				Op:      cmd.GetOp(),
 			}
 			resp, err = c.kitexClient.PutAppend(ctx, putAppendArgs, opts...)
 		} else {
 			getArgs := &konata_client.GetArgs_{
 				ReqId:   reqId,
-				Command: command,
+				Command: string(commandBs),
 				Op:      cmd.GetOp(),
 			}
-			resp, err = c.kitexClient.Get(ctx, getArgs)
+			resp, err = c.kitexClient.Get(ctx, getArgs, opts...)
 		}
 		// 网络异常/重试异常
 		if err != nil || (resp.Error != nil && resp.Error.Repeat) {
@@ -144,7 +147,8 @@ func (c *DefaultClient) RemoveReqId(ctx context.Context, reqId string, targetAdd
 		opts := c.buildOpt(*targetAddr)
 		for {
 			rsp, err := c.kitexClient.RemoveReqId(context.Background(), &konata_client.GetArgs_{ReqId: reqId}, opts...)
-			if err != nil || (rsp.Error != nil && rsp.Error.Repeat) {
+			// 只要不是语句解析错误，那么就该重试
+			if err != nil || (rsp.Error != nil && rsp.Error.Code != konata_client.ErrCodeCommandParseFail) {
 				continue
 			}
 			break
@@ -174,4 +178,11 @@ func (c *DefaultClient) buildOpt(addr string) []callopt.Option {
 	opts := make([]callopt.Option, 0)
 	opts = append(opts, callopt.WithHTTPHost(addr))
 	return opts
+}
+
+func (c *DefaultClient) buildCommand(reqId, msg string) *konata_client.Command {
+	return &konata_client.Command{
+		ReqId: reqId,
+		Msg:   msg,
+	}
 }

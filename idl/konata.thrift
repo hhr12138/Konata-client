@@ -10,12 +10,19 @@ const OpType RemoveId = "remove_id";
 typedef i32 ErrCode
 
 const ErrCode ErrCodeRspParseFail = 40034;
+const ErrCode ErrCodeCommandParseFail = 40035;
+
 const ErrCode ErrCodeMasterReplace = 50012;
 
 struct BizErr {
     1: ErrCode code,
     2: string message,
     3: bool repeat,
+}
+
+struct Command {
+    1: string req_id,
+    2: string msg,
 }
 
 struct GetArgs {

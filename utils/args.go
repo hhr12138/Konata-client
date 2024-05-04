@@ -19,7 +19,7 @@ func GetAddrIdx(key string) int {
 	return int(hash.Sum32())
 }
 
-func BuildCommand(args ...interface{}) (string, error) {
+func BuildMsg(args ...interface{}) (string, error) {
 	var b strings.Builder
 	b.WriteRune(consts.RESPArrays)
 	b.WriteString(strconv.FormatInt(int64(len(args)), 10))
@@ -27,14 +27,14 @@ func BuildCommand(args ...interface{}) (string, error) {
 	b.WriteRune('\n')
 
 	for _, arg := range args {
-		if err := append(&b, arg); err != nil {
+		if err := appendVal(&b, arg); err != nil {
 			return "", err
 		}
 	}
 	return b.String(), nil
 }
 
-func append(b *strings.Builder, val interface{}) error {
+func appendVal(b *strings.Builder, val interface{}) error {
 	switch v := val.(type) {
 	case nil:
 		appendString(b, "")
