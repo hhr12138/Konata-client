@@ -47,9 +47,45 @@ struct PutAppendArgs {
     3: OpType op,
 }
 
+struct RequestVoteArgs {
+    1: i64 term,
+    2: i64 candidate_id,
+    3: i64 last_log_index,
+    4: i64 last_log_term,
+}
+
+struct RequestVoteReply {
+    1: i64 term,
+    2: bool vote_granted,
+}
+
+struct Log {
+    1: i64 term,
+    2: i64 index,
+    3: string command,
+}
+
+struct RequestAppendArgs {
+    1: i64 term,
+    2: i64 leader_id,
+    3: i64 prev_log_index,
+    4: i64 prev_log_term,
+    5: list<Log> entries,
+    6: i64 leader_commit,
+}
+
+struct RequestAppendReply {
+    1: i64 term,
+    2: bool success,
+    3: i64 next_index,
+    4: i64 log_term
+}
+
 service KonataService {
     Reply Get(1: GetArgs args),
     Reply PutAppend(1: PutAppendArgs args),
     Reply RemoveReqId(1: GetArgs args),
+    RequestVoteReply RequestVote(1: RequestVoteArgs args),
+    RequestAppendReply AppendEntries(1: RequestAppendArgs args),
 }
 
