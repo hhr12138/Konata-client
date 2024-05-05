@@ -14,6 +14,8 @@ type Client interface {
 	Get(ctx context.Context, args_ *konata_client.GetArgs_, callOptions ...callopt.Option) (r *konata_client.Reply, err error)
 	PutAppend(ctx context.Context, args_ *konata_client.PutAppendArgs_, callOptions ...callopt.Option) (r *konata_client.Reply, err error)
 	RemoveReqId(ctx context.Context, args_ *konata_client.GetArgs_, callOptions ...callopt.Option) (r *konata_client.Reply, err error)
+	RequestVote(ctx context.Context, args_ *konata_client.RequestVoteArgs_, callOptions ...callopt.Option) (r *konata_client.RequestVoteReply, err error)
+	AppendEntries(ctx context.Context, args_ *konata_client.RequestAppendArgs_, callOptions ...callopt.Option) (r *konata_client.RequestAppendReply, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -58,4 +60,14 @@ func (p *kKonataServiceClient) PutAppend(ctx context.Context, args_ *konata_clie
 func (p *kKonataServiceClient) RemoveReqId(ctx context.Context, args_ *konata_client.GetArgs_, callOptions ...callopt.Option) (r *konata_client.Reply, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.RemoveReqId(ctx, args_)
+}
+
+func (p *kKonataServiceClient) RequestVote(ctx context.Context, args_ *konata_client.RequestVoteArgs_, callOptions ...callopt.Option) (r *konata_client.RequestVoteReply, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.RequestVote(ctx, args_)
+}
+
+func (p *kKonataServiceClient) AppendEntries(ctx context.Context, args_ *konata_client.RequestAppendArgs_, callOptions ...callopt.Option) (r *konata_client.RequestAppendReply, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.AppendEntries(ctx, args_)
 }
