@@ -34,6 +34,20 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"RequestVote": kitex.NewMethodInfo(
+		requestVoteHandler,
+		newKonataServiceRequestVoteArgs,
+		newKonataServiceRequestVoteResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"AppendEntries": kitex.NewMethodInfo(
+		appendEntriesHandler,
+		newKonataServiceAppendEntriesArgs,
+		newKonataServiceAppendEntriesResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -154,6 +168,42 @@ func newKonataServiceRemoveReqIdResult() interface{} {
 	return konata_client.NewKonataServiceRemoveReqIdResult()
 }
 
+func requestVoteHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*konata_client.KonataServiceRequestVoteArgs)
+	realResult := result.(*konata_client.KonataServiceRequestVoteResult)
+	success, err := handler.(konata_client.KonataService).RequestVote(ctx, realArg.Args_)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newKonataServiceRequestVoteArgs() interface{} {
+	return konata_client.NewKonataServiceRequestVoteArgs()
+}
+
+func newKonataServiceRequestVoteResult() interface{} {
+	return konata_client.NewKonataServiceRequestVoteResult()
+}
+
+func appendEntriesHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*konata_client.KonataServiceAppendEntriesArgs)
+	realResult := result.(*konata_client.KonataServiceAppendEntriesResult)
+	success, err := handler.(konata_client.KonataService).AppendEntries(ctx, realArg.Args_)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newKonataServiceAppendEntriesArgs() interface{} {
+	return konata_client.NewKonataServiceAppendEntriesArgs()
+}
+
+func newKonataServiceAppendEntriesResult() interface{} {
+	return konata_client.NewKonataServiceAppendEntriesResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -189,6 +239,26 @@ func (p *kClient) RemoveReqId(ctx context.Context, args_ *konata_client.GetArgs_
 	_args.Args_ = args_
 	var _result konata_client.KonataServiceRemoveReqIdResult
 	if err = p.c.Call(ctx, "RemoveReqId", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) RequestVote(ctx context.Context, args_ *konata_client.RequestVoteArgs_) (r *konata_client.RequestVoteReply, err error) {
+	var _args konata_client.KonataServiceRequestVoteArgs
+	_args.Args_ = args_
+	var _result konata_client.KonataServiceRequestVoteResult
+	if err = p.c.Call(ctx, "RequestVote", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) AppendEntries(ctx context.Context, args_ *konata_client.RequestAppendArgs_) (r *konata_client.RequestAppendReply, err error) {
+	var _args konata_client.KonataServiceAppendEntriesArgs
+	_args.Args_ = args_
+	var _result konata_client.KonataServiceAppendEntriesResult
+	if err = p.c.Call(ctx, "AppendEntries", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
