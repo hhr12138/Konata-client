@@ -100,10 +100,14 @@ func ReadArrayReply(val string, parse func(val []string, n int64) (interface{}, 
 		return nil, ParseErrorReply(val)
 	case consts.RESPArrays:
 		// 分割数组，得到每一个元素
-		vals := strings.Split(val, "\\n\\r")
+		vals := strings.Split(val, "\\r\\n")
 		n, err := parseArrayLen(vals[0])
 		if err != nil {
 			return nil, err
+		}
+		// 末尾待遇/r/n的话去掉最后的空元素
+		if len(vals[len(vals)-1]) == 0 {
+			vals = vals[:len(vals)-1]
 		}
 		return parse(vals[1:], n)
 	default:
