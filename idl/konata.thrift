@@ -23,14 +23,18 @@ struct GetArgs {
     2: string command,
     3: OpType op,
 }
-
+//Err     Err
+  //	ErrCode consts.ErrorCode
+  //	// 测试的时候暂定为int64
+  //	Addr int
 struct BaseReply {
     1: string Addr,
+    2: string err,
+    3: ErrCode error_code,
 }
 
 struct Reply {
     1: string value,
-    2: BizErr error,
     255: BaseReply base,
 }
 
