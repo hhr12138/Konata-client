@@ -117,16 +117,17 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 			resp, err = c.kitexClient.Get(ctx, getArgs, opts...)
 		}
 		// 网络异常/重试异常
-		if err != nil || (resp != nil || resp.Error != nil && resp.Error.Repeat) {
+		//todo:区分下异常类型
+		if err != nil || (resp != nil || resp.Base.ErrorCode != konata_client.Nil) {
 			// 当前服务不是master，更换master.
-			if resp != nil && resp.Error != nil && resp.Error.Code == konata_client.ErrCodeMasterReplace {
+			if resp != nil && resp.Base.ErrorCode == konata_client.ErrCodeMasterReplace {
 				c.Addrs[addrIdx].Store(resp.Base.Addr)
 			}
 			continue
 		}
 		// 明确执行失败的异常直接抛出
-		if resp.Error != nil {
-			err = fmt.Errorf("err_code=%v,message=%v", resp.Error.Code, resp.Error.Message)
+		if resp.Base.ErrorCode != konata_client.Nil {
+			err = fmt.Errorf("err_code=%v,message=%v", resp.Base.ErrorCode, resp.Base.Err)
 			cmd.SetErr(err)
 			return err
 		}
@@ -151,7 +152,7 @@ func (c *DefaultClient) RemoveReqId(ctx context.Context, reqId string, targetAdd
 		for {
 			rsp, err := c.kitexClient.RemoveReqId(context.Background(), &konata_client.GetArgs_{ReqId: reqId}, opts...)
 			// 只要不是语句解析错误，那么就该重试
-			if err != nil || (rsp.Error != nil && rsp.Error.Code != konata_client.ErrCodeCommandParseFail) {
+			if err != nil || (rsp.Base.ErrorCode != konata_client.ErrCodeCommandParseFail) {
 				continue
 			}
 			break

@@ -15,12 +15,30 @@ const (
 	Read OpType = "read"
 
 	RemoveId OpType = "remove_id"
+	//	Nil                     ErrorCode = 0
+	//	ErrCodeCommon           ErrorCode = 50001
+	//	ErrCodeIsNotLeader      ErrorCode = 50013 // 当前节点不是leader
+	Nil ErrCode = 0
 
 	ErrCodeRspParseFail ErrCode = 40034
 
 	ErrCodeCommandParseFail ErrCode = 40035
 
+	ErrCodeCommon ErrCode = 50001
+
 	ErrCodeMasterReplace ErrCode = 50012
+
+	ErrCodeIsNotLeader ErrCode = 50013
+
+	ErrCodeNetworkPartition ErrCode = 50014
+
+	ErrCodeApplyTimeout ErrCode = 50015
+
+	ErrCodeServiceDead ErrCode = 50016
+
+	ErrCodeDiscardMsg ErrCode = 50017
+
+	ErrCodeTypeErr ErrCode = 50018
 )
 
 type OpType = string
@@ -822,8 +840,15 @@ func (p *GetArgs_) Field3DeepEqual(src OpType) bool {
 	return true
 }
 
+// Err     Err
+//
+//	ErrCode consts.ErrorCode
+//	// 测试的时候暂定为int64
+//	Addr int
 type BaseReply struct {
-	Addr string `thrift:"Addr,1" frugal:"1,default,string" json:"Addr"`
+	Addr      string  `thrift:"Addr,1" frugal:"1,default,string" json:"Addr"`
+	Err       string  `thrift:"err,2" frugal:"2,default,string" json:"err"`
+	ErrorCode ErrCode `thrift:"error_code,3" frugal:"3,default,i32" json:"error_code"`
 }
 
 func NewBaseReply() *BaseReply {
@@ -840,12 +865,34 @@ func (p *BaseReply) GetAddr() (v string) {
 	}
 	return
 }
+
+func (p *BaseReply) GetErr() (v string) {
+	if p != nil {
+		return p.Err
+	}
+	return
+}
+
+func (p *BaseReply) GetErrorCode() (v ErrCode) {
+	if p != nil {
+		return p.ErrorCode
+	}
+	return
+}
 func (p *BaseReply) SetAddr(val string) {
 	p.Addr = val
+}
+func (p *BaseReply) SetErr(val string) {
+	p.Err = val
+}
+func (p *BaseReply) SetErrorCode(val ErrCode) {
+	p.ErrorCode = val
 }
 
 var fieldIDToName_BaseReply = map[int16]string{
 	1: "Addr",
+	2: "err",
+	3: "error_code",
 }
 
 func (p *BaseReply) Read(iprot thrift.TProtocol) (err error) {
@@ -870,6 +917,22 @@ func (p *BaseReply) Read(iprot thrift.TProtocol) (err error) {
 		case 1:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -913,6 +976,24 @@ func (p *BaseReply) ReadField1(iprot thrift.TProtocol) error {
 	}
 	return nil
 }
+func (p *BaseReply) ReadField2(iprot thrift.TProtocol) error {
+
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		p.Err = v
+	}
+	return nil
+}
+func (p *BaseReply) ReadField3(iprot thrift.TProtocol) error {
+
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		p.ErrorCode = v
+	}
+	return nil
+}
 
 func (p *BaseReply) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -922,6 +1003,14 @@ func (p *BaseReply) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 	}
@@ -959,6 +1048,40 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
+func (p *BaseReply) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("err", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Err); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *BaseReply) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("error_code", thrift.I32, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.ErrorCode); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
 func (p *BaseReply) String() string {
 	if p == nil {
 		return "<nil>"
@@ -976,6 +1099,12 @@ func (p *BaseReply) DeepEqual(ano *BaseReply) bool {
 	if !p.Field1DeepEqual(ano.Addr) {
 		return false
 	}
+	if !p.Field2DeepEqual(ano.Err) {
+		return false
+	}
+	if !p.Field3DeepEqual(ano.ErrorCode) {
+		return false
+	}
 	return true
 }
 
@@ -986,10 +1115,23 @@ func (p *BaseReply) Field1DeepEqual(src string) bool {
 	}
 	return true
 }
+func (p *BaseReply) Field2DeepEqual(src string) bool {
+
+	if strings.Compare(p.Err, src) != 0 {
+		return false
+	}
+	return true
+}
+func (p *BaseReply) Field3DeepEqual(src ErrCode) bool {
+
+	if p.ErrorCode != src {
+		return false
+	}
+	return true
+}
 
 type Reply struct {
 	Value string     `thrift:"value,1" frugal:"1,default,string" json:"value"`
-	Error *BizErr    `thrift:"error,2" frugal:"2,default,BizErr" json:"error"`
 	Base  *BaseReply `thrift:"base,255" frugal:"255,default,BaseReply" json:"base"`
 }
 
@@ -1008,18 +1150,6 @@ func (p *Reply) GetValue() (v string) {
 	return
 }
 
-var Reply_Error_DEFAULT *BizErr
-
-func (p *Reply) GetError() (v *BizErr) {
-	if p == nil {
-		return
-	}
-	if !p.IsSetError() {
-		return Reply_Error_DEFAULT
-	}
-	return p.Error
-}
-
 var Reply_Base_DEFAULT *BaseReply
 
 func (p *Reply) GetBase() (v *BaseReply) {
@@ -1034,21 +1164,13 @@ func (p *Reply) GetBase() (v *BaseReply) {
 func (p *Reply) SetValue(val string) {
 	p.Value = val
 }
-func (p *Reply) SetError(val *BizErr) {
-	p.Error = val
-}
 func (p *Reply) SetBase(val *BaseReply) {
 	p.Base = val
 }
 
 var fieldIDToName_Reply = map[int16]string{
 	1:   "value",
-	2:   "error",
 	255: "base",
-}
-
-func (p *Reply) IsSetError() bool {
-	return p.Error != nil
 }
 
 func (p *Reply) IsSetBase() bool {
@@ -1077,14 +1199,6 @@ func (p *Reply) Read(iprot thrift.TProtocol) (err error) {
 		case 1:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1136,13 +1250,6 @@ func (p *Reply) ReadField1(iprot thrift.TProtocol) error {
 	}
 	return nil
 }
-func (p *Reply) ReadField2(iprot thrift.TProtocol) error {
-	p.Error = NewBizErr()
-	if err := p.Error.Read(iprot); err != nil {
-		return err
-	}
-	return nil
-}
 func (p *Reply) ReadField255(iprot thrift.TProtocol) error {
 	p.Base = NewBaseReply()
 	if err := p.Base.Read(iprot); err != nil {
@@ -1159,10 +1266,6 @@ func (p *Reply) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -1204,23 +1307,6 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *Reply) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("error", thrift.STRUCT, 2); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Error.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
-}
-
 func (p *Reply) writeField255(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("base", thrift.STRUCT, 255); err != nil {
 		goto WriteFieldBeginError
@@ -1255,9 +1341,6 @@ func (p *Reply) DeepEqual(ano *Reply) bool {
 	if !p.Field1DeepEqual(ano.Value) {
 		return false
 	}
-	if !p.Field2DeepEqual(ano.Error) {
-		return false
-	}
 	if !p.Field255DeepEqual(ano.Base) {
 		return false
 	}
@@ -1267,13 +1350,6 @@ func (p *Reply) DeepEqual(ano *Reply) bool {
 func (p *Reply) Field1DeepEqual(src string) bool {
 
 	if strings.Compare(p.Value, src) != 0 {
-		return false
-	}
-	return true
-}
-func (p *Reply) Field2DeepEqual(src *BizErr) bool {
-
-	if !p.Error.DeepEqual(src) {
 		return false
 	}
 	return true
