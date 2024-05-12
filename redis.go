@@ -29,6 +29,9 @@ type DefaultClient struct {
 
 // NewClient returns a client to the Redis Server specified by Options.
 func NewClient(opt *Options) (*DefaultClient, error) {
+	if opt == nil {
+		opt = new(Options)
+	}
 	opt.init()
 
 	c := DefaultClient{
@@ -76,7 +79,7 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 		opts       []callopt.Option
 		key        = cmd.Args()[1].(string)
 		// 根据keyhash 得到处理他的节点
-		addrIdx = utils.GetAddrIdx(key)
+		addrIdx = utils.GetAddrIdx(key, len(c.Addrs))
 	)
 	ctx = context.WithValue(ctx, "req_id", reqId)
 	defer c.RemoveReqId(ctx, reqId, targetAddr)
@@ -91,7 +94,7 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 			time.Sleep(c.retryBackoff(attempt))
 		}
 
-		msg, err := utils.BuildMsg(cmd.Args())
+		msg, err := utils.BuildMsg(cmd.Args()...)
 		if err != nil {
 			cmd.SetErr(err)
 			return err
@@ -114,9 +117,9 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 			resp, err = c.kitexClient.Get(ctx, getArgs, opts...)
 		}
 		// 网络异常/重试异常
-		if err != nil || (resp.Error != nil && resp.Error.Repeat) {
+		if err != nil || (resp != nil || resp.Error != nil && resp.Error.Repeat) {
 			// 当前服务不是master，更换master.
-			if resp.Error.Code == konata_client.ErrCodeMasterReplace {
+			if resp != nil && resp.Error != nil && resp.Error.Code == konata_client.ErrCodeMasterReplace {
 				c.Addrs[addrIdx].Store(resp.Base.Addr)
 			}
 			continue

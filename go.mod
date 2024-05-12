@@ -25,6 +25,7 @@ require (
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/pprof v0.0.0-20220608213341-c488b8fa1db3 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
 	github.com/jhump/protoreflect v1.8.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
