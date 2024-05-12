@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	defaultAddr = "localhost:59864"
+	defaultAddr = "127.0.0.1:8887"
 )
 
 var (
@@ -28,7 +28,7 @@ type config struct {
 
 // 解析yaml文件，并判断
 func init() {
-	yamlFile := "/yaml/konata.yaml"
+	yamlFile := "./yaml/konata.yaml"
 	file, err := os.Open(yamlFile)
 	if err != nil {
 		panic(fmt.Errorf("open config file err: %v", err))
@@ -40,9 +40,9 @@ func init() {
 	if err != nil {
 		panic(fmt.Errorf("decode config file err: %v", err))
 	}
-	if len(cfg.Addrs) == 0 {
-		panic(fmt.Errorf("len(cfg.Addrs) == 0"))
-	}
+	//if len(cfg.ConfigCenterAddr) == 0 {
+	//	panic(fmt.Errorf("config_center_addr is nil"))
+	//}
 	DefaultAddrs = cfg.Addrs
 	GroupId = cfg.GroupId
 	ClientId = cfg.ClientId

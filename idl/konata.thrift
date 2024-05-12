@@ -9,10 +9,24 @@ const OpType RemoveId = "remove_id";
 
 typedef i32 ErrCode
 
+//	Nil                     ErrorCode = 0
+  //	ErrCodeCommon           ErrorCode = 50001
+  //	ErrCodeIsNotLeader      ErrorCode = 50013 // 当前节点不是leader
+
+
+const ErrCode Nil = 0;
+
 const ErrCode ErrCodeRspParseFail = 40034;
 const ErrCode ErrCodeCommandParseFail = 40035;
 
+const ErrCode ErrCodeCommon = 50001
 const ErrCode ErrCodeMasterReplace = 50012;
+const ErrCode ErrCodeIsNotLeader = 50013;
+ const 	 ErrCode ErrCodeNetworkPartition = 50014 // 网络分区异常
+  const	ErrCode ErrCodeApplyTimeout      = 50015 // 写操作等待日志提交超时，需要重试
+  const	ErrCode ErrCodeServiceDead       = 50016
+ const 	ErrCode ErrCodeDiscardMsg        = 50017
+ const 	ErrCode ErrCodeTypeErr           = 50018
 
 struct BizErr {
     1: ErrCode code,

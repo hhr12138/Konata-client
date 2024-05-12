@@ -3,20 +3,22 @@ package utils
 import (
 	"encoding"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/hhr12138/Konata-client/consts"
 	"hash/fnv"
 	"strconv"
 	"strings"
 )
 
+// 后续优化成雪花算法
 func GetReqId() string {
-	return ""
+	return uuid.NewString()
 }
 
-func GetAddrIdx(key string) int {
+func GetAddrIdx(key string, length int) int {
 	hash := fnv.New32a()
 	hash.Write([]byte(key))
-	return int(hash.Sum32())
+	return int(hash.Sum32()) % length
 }
 
 func BuildMsg(args ...interface{}) (string, error) {
