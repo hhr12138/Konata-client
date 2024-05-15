@@ -117,6 +117,7 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 			resp, err = c.kitexClient.Get(ctx, getArgs, opts...)
 		}
 		// 网络异常/重试异常
+
 		if err != nil || (resp != nil && resp.Base.ErrorCode != konata_client.Nil) {
 			// 当前服务不是master，更换master.
 			if resp != nil && resp.Base.ErrorCode == konata_client.ErrCodeMasterReplace {
