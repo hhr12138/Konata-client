@@ -117,8 +117,7 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 			resp, err = c.kitexClient.Get(ctx, getArgs, opts...)
 		}
 		// 网络异常/重试异常
-		//todo:区分下异常类型
-		if err != nil || (resp != nil || resp.Base.ErrorCode != konata_client.Nil) {
+		if err != nil || (resp != nil && resp.Base.ErrorCode != konata_client.Nil) {
 			// 当前服务不是master，更换master.
 			if resp != nil && resp.Base.ErrorCode == konata_client.ErrCodeMasterReplace {
 				c.Addrs[addrIdx].Store(resp.Base.Addr)
