@@ -83,7 +83,7 @@ func ReadFloatReply(line string) (float64, error) {
 }
 
 func parseStatusValue(line string) []byte {
-	return []byte(line[1:])
+	return []byte(line[1 : len(line)-4])
 }
 
 func parseUint(b []byte, base int, bitSize int) (uint64, error) {

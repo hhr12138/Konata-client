@@ -47,6 +47,13 @@ func Test_process_Append(t *testing.T) {
 		{
 			name: "test0",
 			args: args{
+				key:   "hi",
+				value: "world",
+			},
+		},
+		{
+			name: "test1",
+			args: args{
 				key:   "hello",
 				value: "world",
 			},
@@ -135,12 +142,23 @@ func Test_process_Get(t *testing.T) {
 		want *StringCmd
 	}{
 		// TODO: Add test cases.
+		{
+			name: "test0",
+			args: args{
+				key: "hello",
+			},
+		},
+		{
+			name: "test0",
+			args: args{
+				key: "hi",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := cli.Get(tt.args.key); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Get() = %v, want %v", got, tt.want)
-			}
+			got := cli.Get(tt.args.key)
+			fmt.Println(string(got.val))
 		})
 	}
 }

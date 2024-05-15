@@ -66,7 +66,7 @@ func (p process) GetDel(key string) *StringCmd {
 // Get Redis `GET key` command. It returns redis.Nil error when key does not exist.
 func (p process) Get(key string) *StringCmd {
 	cmd := NewStringCmd("get", key)
-	cmd.SetOp(konata_client.Write)
+	cmd.SetOp(konata_client.Read)
 	_ = p(cmd)
 	return cmd
 }
