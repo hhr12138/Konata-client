@@ -80,7 +80,7 @@ struct RequestVoteReply {
 struct Log {
     1: i64 term,
     2: i64 index,
-    3: string command,
+    3: PutAppendArgs command,
 }
 
 struct RequestAppendArgs {

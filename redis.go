@@ -120,7 +120,7 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 
 		if err != nil || (resp != nil && resp.Base.ErrorCode != konata_client.Nil) {
 			// 当前服务不是master，更换master.
-			if resp != nil && resp.Base.ErrorCode == konata_client.ErrCodeMasterReplace {
+			if resp != nil && resp.Base.ErrorCode == konata_client.ErrCodeIsNotLeader {
 				c.Addrs[addrIdx].Store(resp.Base.Addr)
 			}
 			continue
@@ -180,7 +180,7 @@ func (c *DefaultClient) retryBackoff(retry int) time.Duration {
 
 func (c *DefaultClient) buildOpt(addr string) []callopt.Option {
 	opts := make([]callopt.Option, 0)
-	opts = append(opts, callopt.WithHTTPHost(addr))
+	opts = append(opts, callopt.WithHostPort(addr))
 	return opts
 }
 

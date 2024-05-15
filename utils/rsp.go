@@ -24,7 +24,7 @@ func ParseErrorReply(line string) error {
 }
 
 func parseInt(b string, base int, bitSize int) (int64, error) {
-	return strconv.ParseInt(b, base, bitSize)
+	return strconv.ParseInt(b[:len(b)-4], base, bitSize)
 }
 
 func ReadBytesReply(line string) ([]byte, error) {

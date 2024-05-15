@@ -6,8 +6,8 @@ import (
 )
 
 var LongConnConfig = connpool.IdleConfig{
-	MaxIdlePerAddress: 10,
+	MaxIdlePerAddress: 20,
 	MaxIdleGlobal:     100,
 	MaxIdleTimeout:    time.Minute,
-	MinIdlePerAddress: 2,
+	MinIdlePerAddress: 3,
 }
