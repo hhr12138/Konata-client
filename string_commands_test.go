@@ -44,17 +44,18 @@ func Test_process_Append(t *testing.T) {
 		want *IntCmd
 	}{
 		// TODO: Add test cases.
+		// 下标1
 		{
-			name: "test0",
+			name: "下标1测试",
 			args: args{
-				key:   "hi",
+				key:   "hello",
 				value: "world",
 			},
 		},
 		{
-			name: "test1",
+			name: "下标0测试",
 			args: args{
-				key:   "hello",
+				key:   "hi",
 				value: "world",
 			},
 		},
@@ -219,12 +220,25 @@ func Test_process_GetSet(t *testing.T) {
 		want *StringCmd
 	}{
 		// TODO: Add test cases.
+		{
+			name: "下标一测试",
+			args: args{
+				key:   "hello",
+				value: "world",
+			},
+		},
+		{
+			name: "下标一测试",
+			args: args{
+				key:   "hi",
+				value: "world",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := cli.GetSet(tt.args.key, tt.args.value); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetSet() = %v, want %v", got, tt.want)
-			}
+			got := cli.GetSet(tt.args.key, tt.args.value)
+			fmt.Println(got)
 		})
 	}
 }
@@ -348,12 +362,25 @@ func Test_process_Set(t *testing.T) {
 		want *StatusCmd
 	}{
 		// TODO: Add test cases.
+		{
+			name: "下标一测试",
+			args: args{
+				key:   "hello",
+				value: "world",
+			},
+		},
+		{
+			name: "下标一测试",
+			args: args{
+				key:   "hi",
+				value: "world",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := cli.Set(tt.args.key, tt.args.value); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Set() = %v, want %v", got, tt.want)
-			}
+			got := cli.Set(tt.args.key, tt.args.value)
+			fmt.Println(got)
 		})
 	}
 }

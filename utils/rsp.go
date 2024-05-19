@@ -20,7 +20,7 @@ func ReadIntReply(line string) (int64, error) {
 }
 
 func ParseErrorReply(line string) error {
-	return errors.New(line[1:])
+	return errors.New(line[1 : len(line)-4])
 }
 
 func parseInt(b string, base int, bitSize int) (int64, error) {
