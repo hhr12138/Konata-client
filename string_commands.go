@@ -132,13 +132,13 @@ func (p process) MSet(values ...interface{}) *StatusCmd {
 // Zero expiration means the key has no expiration time.
 // KeepTTL is a Redis KEEPTTL option to keep existing TTL, it requires your redis-server version >= 6.0,
 // otherwise you will receive an error: (error) ERR syntax error.
-func (p process) Set(key string, value interface{}) *StatusCmd {
+func (p process) Set(key string, value interface{}) *IntCmd {
 	args := make([]interface{}, 3, 5)
 	args[0] = "set"
 	args[1] = key
 	args[2] = value
 
-	cmd := NewStatusCmd(args...)
+	cmd := NewIntCmd(args...)
 	cmd.SetOp(konata_client.Write)
 	_ = p(cmd)
 	return cmd

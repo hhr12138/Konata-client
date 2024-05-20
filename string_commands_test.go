@@ -143,14 +143,14 @@ func Test_process_Get(t *testing.T) {
 		want *StringCmd
 	}{
 		// TODO: Add test cases.
+		//{
+		//	name: "集群1测试",
+		//	args: args{
+		//		key: "hello",
+		//	},
+		//},
 		{
-			name: "test0",
-			args: args{
-				key: "hello",
-			},
-		},
-		{
-			name: "test0",
+			name: "集群0测试",
 			args: args{
 				key: "hi",
 			},

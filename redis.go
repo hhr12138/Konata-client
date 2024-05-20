@@ -74,7 +74,7 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 		// 生成唯一id
 		reqId = utils.GetReqId()
 		// 必须为指针，从而让defer函数能感知到变化
-		targetAddr *string
+		targetAddr string
 		resp       *konata_client.Reply
 		opts       []callopt.Option
 		key        = cmd.Args()[1].(string)
@@ -82,13 +82,11 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 		addrIdx = utils.GetAddrIdx(key, len(c.Addrs))
 	)
 	ctx = context.WithValue(ctx, "req_id", reqId)
-	defer c.RemoveReqId(ctx, reqId, targetAddr)
 	for attempt := 0; ; attempt++ {
 		val := c.Addrs[addrIdx].Load()
 		// 不判ok，这里绝对不能错。
-		addr := val.(string)
-		targetAddr = &addr
-		opts = c.buildOpt(addr)
+		targetAddr = val.(string)
+		opts = c.buildOpt(targetAddr)
 		if attempt > 0 {
 			// 睡眠一段时间，等待网络恢复
 			time.Sleep(c.retryBackoff(attempt))
@@ -97,6 +95,7 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 		msg, err := utils.BuildMsg(cmd.Args()...)
 		if err != nil {
 			cmd.SetErr(err)
+			c.RemoveReqId(ctx, reqId, targetAddr)
 			return err
 		}
 		command := c.buildCommand(reqId, msg)
@@ -129,30 +128,33 @@ func (c *DefaultClient) defaultProcess(cmd Cmder) error {
 		if resp.Base.ErrorCode != konata_client.Nil {
 			err = fmt.Errorf("err_code=%v,message=%v", resp.Base.ErrorCode, resp.Base.Err)
 			cmd.SetErr(err)
+			c.RemoveReqId(ctx, reqId, targetAddr)
 			return err
 		}
 		err = cmd.readReply(resp.Value)
 		if err != nil {
 			cmd.SetErr(errors.Wrapf(err, "err_code=%v,返回值解析失败", konata_client.ErrCodeRspParseFail))
+			c.RemoveReqId(ctx, reqId, targetAddr)
 			return err
 		}
+		c.RemoveReqId(ctx, reqId, targetAddr)
 		return nil
 	}
 }
 
 // 执行结束后异步删除req_id防止oom，服务端后等待一个MSL后删除
-func (c *DefaultClient) RemoveReqId(ctx context.Context, reqId string, targetAddr *string) {
+func (c *DefaultClient) RemoveReqId(ctx context.Context, reqId string, targetAddr string) {
 	// 理论上不会为空，防御性编程
-	if targetAddr == nil {
-		return
-	}
 	// 一直重试直到成功，防止oom
 	go func() {
-		opts := c.buildOpt(*targetAddr)
+		opts := c.buildOpt(targetAddr)
 		for {
 			rsp, err := c.kitexClient.RemoveReqId(context.Background(), &konata_client.GetArgs_{ReqId: reqId}, opts...)
 			// 只要不是语句解析错误，那么就该重试
-			if err != nil || (rsp.Base.ErrorCode != konata_client.ErrCodeCommandParseFail) {
+			if err != nil || (rsp != nil && rsp.Base != nil && rsp.Base.ErrorCode != konata_client.ErrCodeCommandParseFail) {
+				if rsp != nil && rsp.Base != nil && rsp.Base.ErrorCode == konata_client.ErrCodeIsNotLeader {
+					targetAddr = rsp.Base.Addr
+				}
 				continue
 			}
 			break
